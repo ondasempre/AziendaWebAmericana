@@ -1,0 +1,15 @@
+$TTL 2d
+webing.eu. IN SOA ns.webing.eu. hostmaster.webing.eu. (
+    2014050600 ; serial 
+    28 ; refresh 
+    14 ; retry 
+    3600000 ; expire
+    0 ; negative cache ttl 
+)
+
+webing.eu.         IN      NS      ns.webing.eu.
+
+alias.webing.eu.   IN	  CNAME    client.webing.eu.
+
+ns.webing.eu.      IN      A       200.1.1.2
+client.webing.eu.  IN	   A       200.1.1.7

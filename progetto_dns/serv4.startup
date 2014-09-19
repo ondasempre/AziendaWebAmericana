@@ -1,0 +1,4 @@
+ifconfig eth0 200.2.1.7 up hw ether FE:FD:C8:01:01:77 up
+route add default gw 200.2.1.1
+
+/etc/init.d/apache2 start
