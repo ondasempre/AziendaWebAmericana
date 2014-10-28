@@ -1,0 +1,15 @@
+$TTL	604800
+@	IN	SOA	.	root.localhost. (
+               2     ; Serial
+          604800     ; Refresh
+           86400     ; Retry
+         2419200     ; Expire
+          604800 )   ; Negative Cache TTL
+;
+.                        3600000  IN  NS    my.root.server.net
+my.root.server.net       3600000      A     100.0.0.4
+
+webing.com.	IN	NS	ns.webing.com.
+ns.webing.com	IN	A	100.0.0.4
+
+

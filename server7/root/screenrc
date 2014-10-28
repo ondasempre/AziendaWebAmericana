@@ -1,0 +1,10 @@
+startup_message off
+altscreen on
+shell /bin/bash 
+split
+focus bottom
+resize 8
+screen tcpdump -q -n -i eth0 host 10.0.0.3 and ip
+focus top
+screen
+

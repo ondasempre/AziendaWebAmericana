@@ -1,0 +1,99 @@
+ifconfig eth0 150.1.0.2 netmask 255.255.255.0 up
+ifconfig eth0:1 150.1.0.12 netmask 255.255.255.0 up
+ifconfig eth0:2 150.1.0.13 netmask 255.255.255.0 up
+ifconfig eth0:3 150.1.0.14 netmask 255.255.255.0 up
+ifconfig eth0:4 150.1.0.3 netmask 255.255.255.0 up
+ifconfig eth1 192.168.0.1 netmask 255.255.255.0 up
+ifconfig eth2 10.0.0.1 netmask 255.255.255.0 up
+route add default gw 150.1.0.1
+
+## Impostazione indirizzo IP primario delle interfacce: esterna (ext), dmz (dmz), interna (int)
+extip="150.1.0.2"
+dmzip="192.168.0.1"
+intip="10.0.0.1"
+
+## Associazione interfacce alle reti: esterna (ext), dmz (dmz), interna (int)
+extint="eth0"
+dmzint="eth1"
+intint="eth2"
+
+## Indirizzi delle reti: esterna (ext), dmz (dmz), interna (int)
+extnet="150.1.0.0/24"
+dmznet="192.168.0.0/24"
+intnet="10.0.0.0/24"
+
+## Impostazione policy di default
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+iptables -t nat -P POSTROUTING ACCEPT
+iptables -t nat -P PREROUTING ACCEPT
+iptables -t nat -P OUTPUT ACCEPT
+
+## Abilitazione traffico di loopback
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+
+# Inoltra traffico tra la LAN e la DMZ
+iptables -A FORWARD -i $intint -o $dmzint -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i $dmzint -o $intint -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Inoltra traffico tra la EXT e la DMZ
+iptables -A FORWARD -i $extint -o $dmzint -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i $dmzint -o $extint -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Inoltra traffico tra la LAN e la EXT
+iptables -A FORWARD -i $intint -o $extint -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i $extint -o $intint -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Inoltra traffico da PCA e PCM verso PCR 
+iptables -A FORWARD -i $extint -s 100.3.0.2 -d 10.0.0.2 -j ACCEPT
+iptables -A FORWARD -i $extint -s 193.204.161.2 -d 10.0.0.2 -j ACCEPT
+
+# Inoltra traffico da PCM verso server7
+iptables -A FORWARD -i $extint -s 193.204.161.2 -d 10.0.0.3 -j ACCEPT
+
+## LAN natting normale
+iptables -t nat -A POSTROUTING -o $extint -s 10.0.0.2 -j SNAT --to-source 150.1.0.2
+iptables -t nat -A PREROUTING -i $extint -d 150.1.0.2 -j DNAT --to-destination 10.0.0.2
+
+iptables -t nat -A POSTROUTING -o $extint -s 10.0.0.3 -j SNAT --to-source 150.1.0.3
+iptables -t nat -A PREROUTING -i $extint -d 150.1.0.3 -j DNAT --to-destination 10.0.0.3
+
+## Natting di un server web, con accesso http pubblico
+## Natting 1 a 1, dove un IP pubblico corrisponde ad un IP interno
+
+## IP pubblico del webserver1 (su rete esterna):
+extipwebserver1="150.1.0.12"
+
+## IP privato del webserver1 (su dmz)
+webserver1="192.168.0.2"
+
+## NATTING 1-1 (Viene usato l'IP esterno definito in: $extipwebserver1)
+iptables -t nat -A PREROUTING -d $extipwebserver1 -j DNAT --to-destination $webserver1
+iptables -t nat -A POSTROUTING -s $webserver1 -j SNAT --to-source $extipwebserver1
+
+## IP pubblico del webserver2 (su rete esterna):
+extipwebserver2="150.1.0.13"
+
+## IP privato del webserver2 (su dmz)
+webserver2="192.168.0.3"
+
+## NATTING 1-1 (Viene usato l'IP esterno definito in: $extipwebserver2)
+iptables -t nat -A PREROUTING -d $extipwebserver2 -j DNAT --to-destination $webserver2
+iptables -t nat -A POSTROUTING -s $webserver2 -j SNAT --to-source $extipwebserver2
+
+## IP pubblico del webserver3 (su rete esterna):
+extipwebserver3="150.1.0.14"
+
+## IP privato del webserver3 (su dmz)
+webserver3="192.168.0.4"
+
+## NATTING 1-1 (Viene usato l'IP esterno definito in: $extipwebserver3)
+iptables -t nat -A PREROUTING -d $extipwebserver3 -j DNAT --to-destination $webserver3
+iptables -t nat -A POSTROUTING -s $webserver3 -j SNAT --to-source $extipwebserver3
+
+#OpenVPN
+iptables -A FORWARD -p udp --dport 1194 -s 193.204.161.2 -j ACCEPT
+
+
