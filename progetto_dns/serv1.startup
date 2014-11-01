@@ -1,6 +1,0 @@
-ifconfig eth0 195.11.14.5 up
-route add default gw 195.11.14.1
-
-ulimit -s 512
-/etc/init.d/apache2 start
-
