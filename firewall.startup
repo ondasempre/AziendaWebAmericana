@@ -50,9 +50,6 @@ iptables -A FORWARD -i $extint -o $intint -m state --state ESTABLISHED,RELATED -
 iptables -A FORWARD -i $extint -s 100.3.0.2 -d 10.0.0.2 -j ACCEPT
 iptables -A FORWARD -i $extint -s 193.204.161.2 -d 10.0.0.2 -j ACCEPT
 
-# Inoltra traffico da PCM verso server7 ##########################################
-iptables -A FORWARD -i $extint -s 193.204.161.2 -d 10.0.0.3 -j ACCEPT 
-
 ## LAN natting normale
 iptables -t nat -A POSTROUTING -o $extint -s 10.0.0.2 -j SNAT --to-source 150.1.0.2
 iptables -t nat -A PREROUTING -i $extint -d 150.1.0.2 -j DNAT --to-destination 10.0.0.2
@@ -95,5 +92,3 @@ iptables -t nat -A POSTROUTING -s $webserver3 -j SNAT --to-source $extipwebserve
 
 #OpenVPN
 iptables -A FORWARD -p udp --dport 1194 -s 193.204.161.2 -j ACCEPT
-
-

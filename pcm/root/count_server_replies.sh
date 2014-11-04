@@ -1,9 +1,9 @@
 #!/bin/sh
 
 SERVER_VIP=www.webing.com
-REQUEST_COUNT=10
+REQUEST_COUNT=100
 
-echo "Sending 10 requests to $SERVER_VIP..................."
+echo "Sending 100 requests to $SERVER_VIP..."
 
 function get_reply_md5() {
    # Avoid IPv6, because AAAA type queries may disturb
